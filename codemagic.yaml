@@ -8,6 +8,6 @@ workflows:
       - flutter build ios --release --no-codesign  
     publishing:  
       app_store_connect:  
-        api_key: QRUFZ86NTH
-        key_id: a1a19791-db1b-49fc-880a-d2716093d677
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID  
+        api_key: a1a19791-db1b-49fc-880a-d2716093d677
+        key_id:  QRUFZ86NTH
+        issuer_id: app.telecris
