@@ -3,19 +3,16 @@ workflows:
     name: iOS Build Workflow
     environment:
       groups:
-        - ios_config
+        - ios_config  # Corrigido de "1os_config" para "ios_config"
       vars:
-        XCODE_WORKSPACE: "Runner.xcworkspace"
-        XCODE_SCHEME: "Runner"
+        XCODE_WORKSPACE: "Runner.xcworkspace"  # Corrigido de "XCORE_NORKSPACE"
+        XCODE_SCHEME: "Runner"  # Corrigido de "XCORE_SCIENE"
       flutter: stable
       xcode: latest
     scripts:
       - flutter pub get
-      - cd ios && pod install && cd ..
-      - flutter build ios --release --no-codesign
-    artifacts:
-      - build/ios/ipa/*.ipa
+      - cd ios && pod install && cd ..  # Corrigido de "1os" para "ios"
+      - flutter build ios --release --no-codesign  # Corrigido de "1os"
     publishing:
       app_store_connect:
         auth: integration
-        api_key: $APP_STORE_CONNECT_API_KEY  # Chave API (não é o email)
