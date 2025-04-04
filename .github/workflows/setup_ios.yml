@@ -1,34 +1,27 @@
-name: Setup iOS Environment
+name: Simple iOS Setup
 on: [workflow_dispatch]
 
 jobs:
   setup:
     runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-ruby@v1
         with:
-          fetch-depth: 0  # Importante para o git funcionar corretamente
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+          ruby-version: '3.1'
+          
+      - run: sudo gem install cocoapods
+      
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.13.0'  # Versão específica para evitar problemas
-
-      - name: Generate iOS files
-        run: |
-          flutter pub get
-          flutter create --platforms ios --org com.yourdomain .
+          
+      - run: |
+          flutter create --platforms ios .
           cd ios
-          sudo gem install cocoapods -v 1.12.1
-          pod install --repo-update
+          pod install
           cd ..
-
-      - name: Commit changes
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
           git add .
-          git commit -m "[CI] Generated iOS files" || echo "Nenhuma mudança para commitar"
+          git commit -m "Added iOS files" || true
           git push
