@@ -1,0 +1,17 @@
+name: Generate iOS Files
+on: [workflow_dispatch]
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter create .
+      - run: |
+          git config --global user.name "Seu Nome"
+          git config --global user.email "seu-email@exemplo.com"
+          git add .
+          git commit -m "Adiciona arquivos iOS gerados automaticamente"
+          git push
