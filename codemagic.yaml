@@ -2,17 +2,17 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     environment:
-      flutter: 3.22.2  # Use a versão do Flutter do seu projeto
+      flutter: "3.22.2"  # Versão entre aspas para evitar problemas
     scripts:
       - flutter clean
       - flutter pub get
       - flutter build ios --release --no-codesign
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_API_KEY          # Chave .p8 (adicionada como variável de ambiente)
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER    # Key ID (ex: AB123CD45E)
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID      # Issuer ID (a1a19791-db1b-49fc-880a-d2716093d677)
-        team_id: $APP_STORE_CONNECT_TEAM_ID          # Team ID (QRUFZ86NTH)
-      app_settings:
-        bundle_identifier: 'TELECRIS.APP'            # SKU do app
-        app_name: 'TELECRIS Galeteria Cristofoli'    # Nome do app na App Store
+        api_key: $APP_STORE_CONNECT_API_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER  # Seu Key ID GA6U2S4T39
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        # Team ID agora deve ser definido como variável de ambiente
+        # Remova qualquer campo 'team_id' direto no YAML
+      bundle_id: $APP_BUNDLE_ID  # Seu SKU TELECRIS.APP
+      app_name: "TELECRIS"  # Nome do seu app
