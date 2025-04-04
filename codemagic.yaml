@@ -1,18 +1,8 @@
 workflows:
-  ios-workflow:
-    name: iOS Build Workflow
+  ios-simple:
+    name: Simple iOS Build
     environment:
-      groups:
-        - ios_config  # Corrigido de "1os_config" para "ios_config"
-      vars:
-        XCODE_WORKSPACE: "Runner.xcworkspace"  # Corrigido de "XCORE_NORKSPACE"
-        XCODE_SCHEME: "Runner"  # Corrigido de "XCORE_SCIENE"
       flutter: stable
-      xcode: latest
     scripts:
       - flutter pub get
-      - cd ios && pod install && cd ..  # Corrigido de "1os" para "ios"
-      - flutter build ios --release --no-codesign  # Corrigido de "1os"
-    publishing:
-      app_store_connect:
-        auth: integration
+      - flutter build ios --release --no-codesign
