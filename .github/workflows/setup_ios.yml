@@ -1,4 +1,4 @@
-name: iOS Setup Fix
+name: iOS Complete Setup
 on: [workflow_dispatch]
 
 jobs:
@@ -10,6 +10,11 @@ jobs:
         with:
           token: ${{ secrets.CI_TOKEN }}
           fetch-depth: 0
+
+      - name: Clean project
+        run: |
+          rm -rf ios/
+          flutter clean
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -30,9 +35,9 @@ jobs:
       - name: Generate iOS files
         run: |
           flutter pub get
-          flutter create --platforms ios .
+          flutter create --platforms ios --org com.yourdomain .
           cd ios
-          pod install
+          pod install --repo-update
           cd ..
 
       - name: Commit and push
@@ -41,5 +46,5 @@ jobs:
           git config --global user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${{ secrets.CI_TOKEN }}@github.com/${{ github.repository }}
           git add .
-          git commit -m "Generated iOS files" || echo "No changes to commit"
+          git commit -m "[CI] Regenerated iOS files" || echo "No changes to commit"
           git push origin HEAD:main
