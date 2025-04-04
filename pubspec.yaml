@@ -1,0 +1,33 @@
+name: telecris
+description: Aplicativo oficial da Telecris Galeteria Cristofoli
+version: 1.0.0+1  # Formato: versão+build
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6  # Ícones padrão iOS
+  http: ^1.2.0             # Para chamadas API
+  provider: ^6.1.1         # Gerenciamento de estado
+  flutter_dotenv: ^5.1.0   # Variáveis de ambiente
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0    # Análise de código
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/       # Pasta para imagens
+    - .env                 # Arquivo de variáveis (opcional)
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
