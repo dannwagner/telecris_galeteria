@@ -1,8 +1,23 @@
 workflows:
-  ios-simple:
-    name: Simple iOS Build
+  ios-workflow:
+    name: iOS Build Workflow
     environment:
-      flutter: stable
+      groups:
+        - ios_config
+      flutter: "3.19.5"  # Versão estável específica
+      xcode: latest
     scripts:
-      - flutter pub get
-      - flutter build ios --release --no-codesign
+      - name: Setup Ruby
+        script: |
+          sudo gem install cocoapods -v 1.15.2
+          pod setup
+          
+      - name: Get dependencies
+        script: |
+          flutter pub get
+          cd ios && pod install && cd ..
+          
+      - name: Build iOS
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/ipa/*.ipa
