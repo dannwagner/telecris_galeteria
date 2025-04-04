@@ -17,3 +17,37 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+name: Dart CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.13.0'
+        
+    - name: Install dependencies
+      run: |
+        flutter pub get
+        flutter pub upgrade
+        
+    - name: Analyze code
+      run: flutter analyze
+      
+    - name: Run tests
+      run: flutter test
+      
+    - name: Build Android
+      run: flutter build apk --release
+      
+    - name: Build iOS (simulator)
+      run: flutter build ios --simulator --release
