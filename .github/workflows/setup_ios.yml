@@ -1,27 +1,45 @@
-name: Simple iOS Setup
+name: iOS Setup Fix
 on: [workflow_dispatch]
 
 jobs:
   setup:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-ruby@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          ruby-version: '3.1'
-          
-      - run: sudo gem install cocoapods
-      
-      - uses: subosito/flutter-action@v2
+          token: ${{ secrets.CI_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods -v 1.11.3
+          pod setup
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
-          
-      - run: |
+          flutter-version: '3.13.0'
+
+      - name: Generate iOS files
+        run: |
+          flutter pub get
           flutter create --platforms ios .
           cd ios
           pod install
           cd ..
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.CI_TOKEN }}@github.com/${{ github.repository }}
           git add .
-          git commit -m "Added iOS files" || true
-          git push
+          git commit -m "Generated iOS files" || echo "No changes to commit"
+          git push origin HEAD:main
