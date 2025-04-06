@@ -5,22 +5,27 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        BUNDLE_ID: "app.telecris"  # Atualizado com o Bundle ID fornecido
+        BUNDLE_ID: "app.telecris"  # Bundle ID fornecido
         APPLE_ID: "sac@telecris.app"
+        APPLE_ID_PASSWORD: "Cris@344#Foli$220"  # Senha da Apple
         TEAM_ID: "QRUFZ86NTH"
         APP_STORE_CONNECT_KEY_ID: "GA6U2S4T39"
         APP_STORE_CONNECT_ISSUER_ID: "a1a19791-db1b-49fc-880a-d2716093d677"
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY  # Será adicionada nas variáveis de ambiente
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY  # Variável de ambiente
         APPLE_APP_ID: "6743127054"  # ID Apple do app
         APP_SKU: "TELECRIS.APP"  # SKU do app
-      ios_signing:
-        certificates:
-          - name: "iOS Distribution Certificate"
-            # Certificado .p12 será adicionado nas variáveis de ambiente
-        provisioning_profiles:
-          - name: "Telecris Provisioning Profile"
-            # Perfil de provisionamento será adicionado nas variáveis de ambiente
     scripts:
+      - name: Install Fastlane
+        script: |
+          gem install fastlane
+      - name: Set up code signing with Fastlane
+        script: |
+          fastlane match appstore \
+            --app_identifier "app.telecris" \
+            --username "$APPLE_ID" \
+            --team_id "$TEAM_ID" \
+            --git_url "https://github.com/dannwagner/certificates-repo.git" \
+            --git_basic_authorization $(echo -n "dannwagner:YOUR_GITHUB_TOKEN" | base64)
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
@@ -34,7 +39,4 @@ workflows:
     publishing:
       app_store_connect:
         apple_id: $APPLE_ID
-        password: $APPLE_ID_PASSWORD  # Senha será adicionada nas variáveis de ambiente
-        app_store_connect_key_id: $APP_STORE_CONNECT_KEY_ID
-        app_store_connect_issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        app_store_connect_private_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        password: $APPLE_ID_PASSWORD
