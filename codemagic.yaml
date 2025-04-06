@@ -5,15 +5,15 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        BUNDLE_ID: "app.telecris"  # Bundle ID fornecido
+        BUNDLE_ID: "app.telecris"
         APPLE_ID: "sac@telecris.app"
-        APPLE_ID_PASSWORD: "Cris@344#Foli$220"  # Senha da Apple
+        APPLE_ID_PASSWORD: "Cris@344#Foli$220"
         TEAM_ID: "QRUFZ86NTH"
         APP_STORE_CONNECT_KEY_ID: "GA6U2S4T39"
         APP_STORE_CONNECT_ISSUER_ID: "a1a19791-db1b-49fc-880a-d2716093d677"
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY  # Variável de ambiente
-        APPLE_APP_ID: "6743127054"  # ID Apple do app
-        APP_SKU: "TELECRIS.APP"  # SKU do app
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+        APPLE_APP_ID: "6743127054"
+        APP_SKU: "TELECRIS.APP"
     scripts:
       - name: Install Fastlane
         script: |
@@ -25,7 +25,7 @@ workflows:
             --username "$APPLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "https://github.com/dannwagner/certificates-repo.git" \
-            --git_basic_authorization $(echo -n "dannwagner:YOUR_GITHUB_TOKEN" | base64)
+            --git_basic_authorization $(echo -n "dannwagner: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" | base64)
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
