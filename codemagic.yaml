@@ -1,8 +1,40 @@
 workflows:
-  ios-simple:
-    name: Simple iOS Build
+  ios-build-workflow:
+    name: iOS Build Workflow
     environment:
       flutter: stable
+      xcode: latest
+      vars:
+        BUNDLE_ID: "app.telecris"  # Atualizado com o Bundle ID fornecido
+        APPLE_ID: "sac@telecris.app"
+        TEAM_ID: "QRUFZ86NTH"
+        APP_STORE_CONNECT_KEY_ID: "GA6U2S4T39"
+        APP_STORE_CONNECT_ISSUER_ID: "a1a19791-db1b-49fc-880a-d2716093d677"
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY  # Será adicionada nas variáveis de ambiente
+        APPLE_APP_ID: "6743127054"  # ID Apple do app
+        APP_SKU: "TELECRIS.APP"  # SKU do app
+      ios_signing:
+        certificates:
+          - name: "iOS Distribution Certificate"
+            # Certificado .p12 será adicionado nas variáveis de ambiente
+        provisioning_profiles:
+          - name: "Telecris Provisioning Profile"
+            # Perfil de provisionamento será adicionado nas variáveis de ambiente
     scripts:
-      - flutter pub get
-      - flutter build ios --release --no-codesign
+      - name: Install Flutter dependencies
+        script: flutter pub get
+      - name: Build iOS
+        script: flutter build ios --release --no-codesign
+      - name: Export IPA
+        script: |
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/Runner.xcarchive
+          xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/Runner.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        apple_id: $APPLE_ID
+        password: $APPLE_ID_PASSWORD  # Senha será adicionada nas variáveis de ambiente
+        app_store_connect_key_id: $APP_STORE_CONNECT_KEY_ID
+        app_store_connect_issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        app_store_connect_private_key: $APP_STORE_CONNECT_PRIVATE_KEY
