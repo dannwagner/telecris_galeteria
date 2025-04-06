@@ -1,0 +1,5 @@
+git_url("https://github.com/dannwagner/certificates-repo.git") # Substitua pelo URL do novo repositório
+username("sac@telecris.app")
+app_identifier("app.telecris")
+type("appstore")
+team_id("QRUFZ86NTH")
