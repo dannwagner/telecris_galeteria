@@ -7,7 +7,6 @@ workflows:
       vars:
         BUNDLE_ID: "app.telecris"
         APPLE_ID: "sac@telecris.app"
-        APPLE_ID_PASSWORD: "Cris@344#Foli$220"
         TEAM_ID: "QRUFZ86NTH"
         APP_STORE_CONNECT_KEY_ID: "GA6U2S4T39"
         APP_STORE_CONNECT_ISSUER_ID: "a1a19791-db1b-49fc-880a-d2716093d677"
@@ -38,5 +37,7 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        apple_id: $APPLE_ID
-        password: $APPLE_ID_PASSWORD
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_app_store: true  # Remove essa linha se você só quer enviar pro TestFlight
