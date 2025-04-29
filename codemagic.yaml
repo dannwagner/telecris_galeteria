@@ -5,41 +5,49 @@ workflows:
       flutter: stable
       xcode: latest
       groups:
-        # Certifique-se de que 'appstore_credentials' é o nome do grupo
-        # que você criou na UI do Codemagic contendo as variáveis:
-        # APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
-        - appstore_credentials
+        # Grupo com as credenciais da App Store Connect API Key
+        - appstore_credentials 
+        # Grupo onde você salvou a variável CERT_REPO_SSH_KEY
+        # Se você a salvou em 'appstore_credentials', pode remover esta linha.
+        - git_ssh_key # Ajuste o nome do grupo se necessário
       vars:
         # Variáveis necessárias para o Fastlane match
         BUNDLE_ID: "app.telecris"
         APPLE_ID: "sac@telecris.app" # Email da conta Apple Developer
         TEAM_ID: "QRUFZ86NTH" # Seu Team ID da Apple
-        # Remova credenciais sensíveis daqui. Use variáveis seguras.
 
     scripts:
+      - name: Set up SSH key for Git
+        script: |
+          echo "Setting up SSH key..."
+          set -e # Exit immediately if a command exits with a non-zero status.
+          mkdir -p ~/.ssh
+          echo "$CERT_REPO_SSH_KEY" | base64 --decode > ~/.ssh/id_ed25519_cert_repo
+          chmod 600 ~/.ssh/id_ed25519_cert_repo
+          eval "$(ssh-agent -s)" # Start ssh-agent
+          ssh-add ~/.ssh/id_ed25519_cert_repo
+          # Add GitHub to known hosts to avoid prompt
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "SSH key setup complete."
       - name: Install Fastlane
         script: |
           gem install fastlane
-      - name: Set up code signing with Fastlane
+      - name: Set up code signing with Fastlane (using SSH)
         script: |
-          # Usa o novo token do GitHub fornecido
+          # Usa SSH para autenticação
           fastlane match appstore \
             --app_identifier "$BUNDLE_ID" \
             --username "$APPLE_ID" \
             --team_id "$TEAM_ID" \
-            --git_url "https://github.com/dannwagner/certificates-repo.git" \
-            --git_basic_authorization $(echo -n "dannwagner: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" | base64) \
-            --readonly # Adicionado --readonly como boa prática se o match não precisar modificar o repo
-            # Remova --readonly se o match precisar criar/atualizar certificados/perfis no repo
+            --git_url "git@github.com:dannwagner/certificates-repo.git" \
+            --readonly # Mantenha se o match só precisa ler. Remova se precisar escrever.
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
-        # O code signing é feito pelo Fastlane match, então --no-codesign aqui está correto
         script: flutter build ios --release --no-codesign
       - name: Export IPA
         script: |
-          # Certifique-se que seu exportOptions.plist está configurado corretamente
-          # para usar os certificados/perfis baixados pelo Fastlane match.
+          # Verifique se ios/exportOptions.plist está correto (nomes de certificado/perfil)
           xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/Runner.xcarchive
           xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/Runner.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR
 
@@ -48,16 +56,13 @@ workflows:
 
     publishing:
       app_store_connect:
-        # Usa as variáveis de ambiente seguras definidas na UI do Codemagic
-        # e importadas pelo grupo 'appstore_credentials'.
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
 
-        # --- Configurações Opcionais para TestFlight/App Store --- 
-        # Descomente e ajuste conforme necessário:
-        # submit_to_testflight: true # Enviar para TestFlight?
+        # --- Configurações Opcionais --- 
+        # submit_to_testflight: true
         # beta_groups: 
-        #   - NomeDoSeuGrupoBeta # Quais grupos beta receberão?
-        # submit_to_app_store: false # Enviar para revisão da App Store?
+        #   - NomeDoGrupoBeta
+        # submit_to_app_store: false
 
