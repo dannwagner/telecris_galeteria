@@ -15,13 +15,13 @@ workflows:
         TEAM_ID: "QRUFZ86NTH" # Seu Team ID da Apple
 
     scripts:
-      - name: Set up SSH key for Git
+      - name: Set up SSH key for Git (using printf)
         script: |
           echo "Setting up SSH key..."
           set -e # Exit immediately if a command exits with a non-zero status.
           mkdir -p ~/.ssh
-          # Decodifica a chave privada da variável de ambiente
-          echo "$CERT_REPO_SSH_KEY" | base64 --decode > ~/.ssh/id_ed25519_cert_repo
+          # Decodifica a chave privada da variável de ambiente usando printf
+          printf "%s" "$CERT_REPO_SSH_KEY" | base64 --decode > ~/.ssh/id_ed25519_cert_repo
           chmod 600 ~/.ssh/id_ed25519_cert_repo
           eval "$(ssh-agent -s)" # Start ssh-agent
           ssh-add ~/.ssh/id_ed25519_cert_repo
