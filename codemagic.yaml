@@ -6,7 +6,7 @@ workflows:
       xcode: latest
       groups:
         # Grupo com as credenciais da App Store Connect API Key
-        # e também a variável CERT_REPO_SSH_KEY
+        # e também a variável CERT_REPO_SSH_KEY (com a NOVA chave privada codificada)
         - appstore_credentials 
       vars:
         # Variáveis necessárias para o Fastlane match
@@ -33,13 +33,15 @@ workflows:
           gem install fastlane
       - name: Set up code signing with Fastlane (using SSH)
         script: |
+          echo "Running fastlane match..."
           # Usa SSH para autenticação
+          # A flag --readonly foi REMOVIDA para permitir que o match crie/atualize certificados/perfis
           fastlane match appstore \
             --app_identifier "$BUNDLE_ID" \
             --username "$APPLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "git@github.com:dannwagner/certificates-repo.git" \
-            --readonly # Mantenha se o match só precisa ler. Remova se precisar escrever.
+            --verbose # Adicionado para logs mais detalhados em caso de erro
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
