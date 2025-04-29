@@ -4,40 +4,60 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+      groups:
+        # Certifique-se de que 'appstore_credentials' é o nome do grupo
+        # que você criou na UI do Codemagic contendo as variáveis:
+        # APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
+        - appstore_credentials
       vars:
+        # Variáveis necessárias para o Fastlane match
         BUNDLE_ID: "app.telecris"
-        APPLE_ID: "sac@telecris.app"
-        TEAM_ID: "QRUFZ86NTH"
-        APP_STORE_CONNECT_KEY_ID: "GA6U2S4T39"
-        APP_STORE_CONNECT_ISSUER_ID: "a1a19791-db1b-49fc-880a-d2716093d677"
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
-        APPLE_APP_ID: "6743127054"
-        APP_SKU: "TELECRIS.APP"
+        APPLE_ID: "sac@telecris.app" # Email da conta Apple Developer
+        TEAM_ID: "QRUFZ86NTH" # Seu Team ID da Apple
+        # Remova credenciais sensíveis daqui. Use variáveis seguras.
+
     scripts:
       - name: Install Fastlane
         script: |
           gem install fastlane
       - name: Set up code signing with Fastlane
         script: |
+          # Usa o novo token do GitHub fornecido
           fastlane match appstore \
-            --app_identifier "app.telecris" \
+            --app_identifier "$BUNDLE_ID" \
             --username "$APPLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "https://github.com/dannwagner/certificates-repo.git" \
-            --git_basic_authorization $(echo -n "dannwagner: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" | base64)
+            --git_basic_authorization $(echo -n "dannwagner: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" | base64) \
+            --readonly # Adicionado --readonly como boa prática se o match não precisar modificar o repo
+            # Remova --readonly se o match precisar criar/atualizar certificados/perfis no repo
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
+        # O code signing é feito pelo Fastlane match, então --no-codesign aqui está correto
         script: flutter build ios --release --no-codesign
       - name: Export IPA
         script: |
+          # Certifique-se que seu exportOptions.plist está configurado corretamente
+          # para usar os certificados/perfis baixados pelo Fastlane match.
           xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/Runner.xcarchive
           xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/Runner.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR
+
     artifacts:
       - build/ios/ipa/*.ipa
+
     publishing:
       app_store_connect:
+        # Usa as variáveis de ambiente seguras definidas na UI do Codemagic
+        # e importadas pelo grupo 'appstore_credentials'.
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_app_store: true  # Remove essa linha se você só quer enviar pro TestFlight
+
+        # --- Configurações Opcionais para TestFlight/App Store --- 
+        # Descomente e ajuste conforme necessário:
+        # submit_to_testflight: true # Enviar para TestFlight?
+        # beta_groups: 
+        #   - NomeDoSeuGrupoBeta # Quais grupos beta receberão?
+        # submit_to_app_store: false # Enviar para revisão da App Store?
+
