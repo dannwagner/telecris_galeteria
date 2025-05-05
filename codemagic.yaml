@@ -19,11 +19,27 @@ workflows:
       - name: Install Fastlane
         script: |
           gem install fastlane
+      
+      # --- NOVO PASSO DE DIAGNÓSTICO --- 
+      - name: Test SSH Connection to GitHub
+        script: |
+          echo "Setting up SSH key for testing..."
+          set -e # Exit on first error
+          mkdir -p ~/.ssh
+          # Escreve a chave privada da variável de ambiente para um arquivo
+          echo "$MATCH_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519_match
+          chmod 600 ~/.ssh/id_ed25519_match
+          echo "Adding GitHub to known hosts..."
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "Attempting SSH connection test to github.com..."
+          # Tenta autenticar no GitHub usando a chave específica. O -T não aloca um TTY.
+          # Esperamos uma mensagem de sucesso ou um erro claro de permissão.
+          ssh -T -i ~/.ssh/id_ed25519_match git@github.com || echo "SSH connection test failed!"
+          echo "SSH connection test finished."
+      # --- FIM DO PASSO DE DIAGNÓSTICO ---
+
       - name: Set up code signing with Fastlane (using SSH)
         script: |
-          echo "Adding GitHub to known hosts..."
-          # Garante que o host do GitHub é conhecido
-          mkdir -p ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
           echo "Running fastlane match..."
           # Usa SSH para autenticação (Fastlane deve pegar MATCH_SSH_PRIVATE_KEY automaticamente)
           # A flag --readonly foi REMOVIDA anteriormente
