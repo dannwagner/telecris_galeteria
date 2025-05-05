@@ -6,20 +6,18 @@ workflows:
       xcode: latest
       groups:
         # Grupo com as credenciais da App Store Connect API Key
-        # e a variável MATCH_SSH_PRIVATE_KEY (com a NOVA chave privada em TEXTO PLANO)
+        # e a variável MATCH_SSH_PRIVATE_KEY
         - appstore_credentials 
       vars:
-        # Variáveis necessárias para o Fastlane match
         BUNDLE_ID: "app.telecris"
-        # APPLE_ID: "sac@telecris.app" # REMOVIDO - Não é mais necessário com API Key
-        TEAM_ID: "QRUFZ86NTH" # Seu Team ID da Apple
+        TEAM_ID: "QRUFZ86NTH"
 
     scripts:
       - name: Install Fastlane
         script: |
           gem install fastlane
       
-      - name: Set up code signing with Fastlane (using API Key)
+      - name: Set up code signing with Fastlane (explicit API Key)
         script: |
           echo "Setting up SSH key file for Git..."
           mkdir -p ~/.ssh
@@ -31,15 +29,15 @@ workflows:
           echo "Exporting GIT_SSH_COMMAND to force key usage..."
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_match_git -o IdentitiesOnly=yes"
           
-          echo "Running fastlane match using App Store Connect API Key..."
-          # REMOVIDO: --username "$APPLE_ID"
-          # Fastlane detectará automaticamente as credenciais da API Key das variáveis de ambiente
-          # (APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY)
-          # fornecidas pelo grupo 'appstore_credentials'.
+          echo "Running fastlane match explicitly using App Store Connect API Key..."
+          # Passando explicitamente os parâmetros da API Key para o fastlane match
           fastlane match appstore \
             --app_identifier "$BUNDLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "git@github.com:dannwagner/certificates-repo.git" \
+            --api_key_id "$APP_STORE_CONNECT_KEY_ID" \
+            --api_issuer_id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --api_key "$APP_STORE_CONNECT_PRIVATE_KEY" \
             --verbose 
       - name: Install Flutter dependencies
         script: flutter pub get
@@ -47,7 +45,6 @@ workflows:
         script: flutter build ios --release --no-codesign
       - name: Export IPA
         script: |
-          # Verifique se ios/exportOptions.plist está correto (nomes de certificado/perfil)
           xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/Runner.xcarchive
           xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/Runner.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR
 
@@ -56,14 +53,7 @@ workflows:
 
     publishing:
       app_store_connect:
-        # Estas variáveis devem estar definidas corretamente no grupo 'appstore_credentials'
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY 
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-
-        # --- Configurações Opcionais --- 
-        # submit_to_testflight: true
-        # beta_groups: 
-        #   - NomeDoGrupoBeta
-        # submit_to_app_store: false
 
