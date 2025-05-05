@@ -1,5 +1,6 @@
-git_url("https://github.com/dannwagner/certificates-repo.git") # Substitua pelo URL do novo repositório
-username("sac@telecris.app")
+git_url("git@github.com:dannwagner/certificates-repo.git") # Use SSH URL, já que configuramos SSH
+# username("sac@telecris.app") # REMOVIDO/COMENTADO - Para usar API Key
 app_identifier("app.telecris")
 type("appstore")
 team_id("QRUFZ86NTH")
+
