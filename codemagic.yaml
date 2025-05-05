@@ -20,23 +20,37 @@ workflows:
         script: |
           gem install fastlane
       
-      # --- NOVO PASSO DE DIAGNÓSTICO --- 
-      - name: Test SSH Connection to GitHub
+      # --- PASSO DE DIAGNÓSTICO REVISADO --- 
+      - name: Test SSH Connection to GitHub (Revised)
+        # Adiciona 'set -x' para mostrar cada comando executado
+        # Adiciona '|| true' ao comando ssh para que o build não pare imediatamente se ele falhar,
+        # permitindo que vejamos os logs completos do SSH.
         script: |
-          echo "Setting up SSH key for testing..."
-          set -e # Exit on first error
+          set -x # Mostra os comandos sendo executados
+          echo "--- Starting SSH Connection Test --- "
+          echo "Checking environment variable..."
+          if [ -z "$MATCH_SSH_PRIVATE_KEY" ]; then
+            echo "ERROR: MATCH_SSH_PRIVATE_KEY is not set or empty!"
+            exit 1
+          fi
+          echo "Setting up SSH directory and key file..."
           mkdir -p ~/.ssh
           # Escreve a chave privada da variável de ambiente para um arquivo
-          echo "$MATCH_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519_match
-          chmod 600 ~/.ssh/id_ed25519_match
+          echo "$MATCH_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519_match_test
+          if [ ! -s ~/.ssh/id_ed25519_match_test ]; then
+             echo "ERROR: Failed to write private key to file or file is empty!"
+             exit 1
+          fi
+          echo "Setting key file permissions..."
+          chmod 600 ~/.ssh/id_ed25519_match_test
           echo "Adding GitHub to known hosts..."
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          echo "Attempting SSH connection test to github.com..."
-          # Tenta autenticar no GitHub usando a chave específica. O -T não aloca um TTY.
-          # Esperamos uma mensagem de sucesso ou um erro claro de permissão.
-          ssh -T -i ~/.ssh/id_ed25519_match git@github.com || echo "SSH connection test failed!"
-          echo "SSH connection test finished."
-      # --- FIM DO PASSO DE DIAGNÓSTICO ---
+          echo "Attempting VERBOSE SSH connection test to github.com..."
+          # Tenta autenticar no GitHub usando a chave específica com MÁXIMA verbosidade (-vvv).
+          # Usamos '|| true' para garantir que o script continue mesmo se o ssh falhar, para vermos os logs.
+          ssh -vvv -T -i ~/.ssh/id_ed25519_match_test git@github.com || true 
+          echo "--- SSH connection test finished. Check logs above carefully. --- "
+      # --- FIM DO PASSO DE DIAGNÓSTICO REVISADO ---
 
       - name: Set up code signing with Fastlane (using SSH)
         script: |
