@@ -1,0 +1,37 @@
+# Este é o seu novo arquivo fastlane/Fastfile
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Sincroniza certificados e perfis usando match com autenticação via API Key"
+  lane :sync_signing do
+    # Autentica usando a App Store Connect API Key
+    # Lê automaticamente as variáveis de ambiente:
+    # APP_STORE_CONNECT_KEY_ID
+    # APP_STORE_CONNECT_ISSUER_ID
+    # APP_STORE_CONNECT_PRIVATE_KEY
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_PRIVATE_KEY"],
+      duration: 1200, # Opcional: duração da sessão em segundos
+      in_house: false # Defina como true se for uma conta Enterprise
+    )
+
+    # Executa o match
+    # Usará as configurações do Matchfile e a sessão autenticada acima
+    match(
+      type: "appstore", # Ou o tipo que você precisa (development, adhoc)
+      app_identifier: ENV["BUNDLE_ID"],
+      team_id: ENV["TEAM_ID"],
+      git_url: "git@github.com:dannwagner/certificates-repo.git",
+      readonly: false, # Necessário para criar/atualizar certificados/perfis
+      verbose: true
+    )
+
+    # Você pode adicionar outras ações aqui se necessário
+  end
+
+  # Você pode adicionar outras lanes aqui (ex: para build, deploy)
+end
+
