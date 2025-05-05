@@ -17,7 +17,7 @@ workflows:
         script: |
           gem install fastlane
       
-      - name: Set up code signing with Fastlane (explicit API Key)
+      - name: Set up code signing with Fastlane (API Key JSON file)
         script: |
           echo "Setting up SSH key file for Git..."
           mkdir -p ~/.ssh
@@ -28,16 +28,34 @@ workflows:
           
           echo "Exporting GIT_SSH_COMMAND to force key usage..."
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_match_git -o IdentitiesOnly=yes"
+
+          # Criar o arquivo JSON da API Key dinamicamente
+          echo "Creating App Store Connect API Key JSON file..."
+          # Certifique-se de que a chave privada no Codemagic NÃO tenha quebras de linha literais, 
+          # mas sim \n para representar as quebras de linha, ou use printf para formatar.
+          # Usando printf para melhor controle sobre as quebras de linha na chave:
+          printf '{
+            "key_id": "%s",
+            "issuer_id": "%s",
+            "key": "%s",
+            "duration": 1200,
+            "in_house": false
+          }' \
+          "$APP_STORE_CONNECT_KEY_ID" \
+          "$APP_STORE_CONNECT_ISSUER_ID" \
+          "$(echo "$APP_STORE_CONNECT_PRIVATE_KEY" | sed 's/-----BEGIN PRIVATE KEY-----/-----BEGIN PRIVATE KEY-----\\n/' | sed 's/-----END PRIVATE KEY-----/\\n-----END PRIVATE KEY-----/')" \
+          > /tmp/api_key.json
+
+          echo "Verifying created JSON file (first few lines):"
+          head -n 5 /tmp/api_key.json # Apenas para depuração, mostra o início do JSON
           
-          echo "Running fastlane match explicitly using App Store Connect API Key..."
-          # Passando explicitamente os parâmetros da API Key para o fastlane match
+          echo "Running fastlane match using API Key JSON file..."
+          # Usando --api_key com o caminho para o arquivo JSON gerado
           fastlane match appstore \
             --app_identifier "$BUNDLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "git@github.com:dannwagner/certificates-repo.git" \
-            --api_key_id "$APP_STORE_CONNECT_KEY_ID" \
-            --api_issuer_id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --api_key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            --api_key /tmp/api_key.json \
             --verbose 
       - name: Install Flutter dependencies
         script: flutter pub get
@@ -53,6 +71,7 @@ workflows:
 
     publishing:
       app_store_connect:
+        # A publicação já usa a API Key corretamente via variáveis de ambiente
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY 
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
