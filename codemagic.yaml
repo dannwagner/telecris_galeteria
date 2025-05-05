@@ -11,39 +11,36 @@ workflows:
       vars:
         # Variáveis necessárias para o Fastlane match
         BUNDLE_ID: "app.telecris"
-        APPLE_ID: "sac@telecris.app" # Email da conta Apple Developer
+        # APPLE_ID: "sac@telecris.app" # REMOVIDO - Não é mais necessário com API Key
         TEAM_ID: "QRUFZ86NTH" # Seu Team ID da Apple
 
     scripts:
-      # O script "Set up SSH key for Git (using printf)" foi REMOVIDO
       - name: Install Fastlane
         script: |
           gem install fastlane
       
-      # O passo de diagnóstico foi REMOVIDO para esta tentativa
-
-      - name: Set up code signing with Fastlane (using SSH)
+      - name: Set up code signing with Fastlane (using API Key)
         script: |
           echo "Setting up SSH key file for Git..."
           mkdir -p ~/.ssh
-          # Escreve a chave privada da variável de ambiente para um arquivo
           echo "$MATCH_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519_match_git
           chmod 600 ~/.ssh/id_ed25519_match_git
           echo "Adding GitHub to known hosts..."
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           
           echo "Exporting GIT_SSH_COMMAND to force key usage..."
-          # Define explicitamente o comando SSH que o Git deve usar
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_match_git -o IdentitiesOnly=yes"
           
-          echo "Running fastlane match..."
-          # Fastlane/Git agora usarão o comando SSH especificado
+          echo "Running fastlane match using App Store Connect API Key..."
+          # REMOVIDO: --username "$APPLE_ID"
+          # Fastlane detectará automaticamente as credenciais da API Key das variáveis de ambiente
+          # (APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY)
+          # fornecidas pelo grupo 'appstore_credentials'.
           fastlane match appstore \
             --app_identifier "$BUNDLE_ID" \
-            --username "$APPLE_ID" \
             --team_id "$TEAM_ID" \
             --git_url "git@github.com:dannwagner/certificates-repo.git" \
-            --verbose # Mantém verbose para logs detalhados
+            --verbose 
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build iOS
@@ -59,7 +56,8 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        # Estas variáveis devem estar definidas corretamente no grupo 'appstore_credentials'
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY 
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
 
