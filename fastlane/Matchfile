@@ -1,6 +1,5 @@
-git_url("git@github.com:dannwagner/certificates-repo.git") # Use SSH URL, já que configuramos SSH
-# username("sac@telecris.app") # REMOVIDO/COMENTADO - Para usar API Key
-app_identifier("app.telecris")
-type("appstore")
-team_id("QRUFZ86NTH")
-
+git_url("git@github.com:dannwagner/certificates-repo.git")  # Usando SSH
+storage_mode("git")
+app_identifier("app.telecris")  # Substitua pelo seu Bundle ID exato
+username("sac@telecris.app")    # Apple ID
+team_id("6743127054")          # Team ID (encontre em developer.apple.com)
